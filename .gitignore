@@ -1,0 +1,46 @@
+.DS_Store
+
+# local env files
+.env.local
+.env.*.local
+google-notif.json
+celerybeat-schedule
+
+# Log files
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+### Django ###
+*.log
+*.pot
+*.pyc
+__pycache__/
+local_settings.py
+db.sqlite3
+db.sqlite3-journal
+!*media/.gitkeep
+media/*
+
+# Environments
+.env
+.venv
+venv/
+env.bak/
+venv.bak/
+
+# Editor directories and files
+.idea
+.vscode
+settings.json
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+temp/
+/data
+.htpasswd
+.coverage
