@@ -31,7 +31,7 @@ router = DefaultRouter()
 urlpatterns = [
     path('api/', include(router.urls)),
     path("admin/", admin.site.urls),
-    path('api/calendar/', include('event.api')),
+    # path('api/calendar/', include('event.api')),
 
     # JWT
     path('api/token/', TokenObtainPairView.as_view(),

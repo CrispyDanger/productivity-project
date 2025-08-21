@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     "channels",
     'core',
     'event',
+    'chat',
 
 ]
 
