@@ -32,6 +32,17 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
+ASGI_APPLICATION = "productivity-app.asgi.application"
+
+
+CHANNEL_LAYERS = {"default": {
+    "BACKEND": "channels_redis.core.RedisChannelLayer",
+    "CONFIG": {
+        "hosts": [("redis", 6379)],
+        },
+},
+}
+
 
 # Application definition
 
@@ -173,3 +184,5 @@ REST_FRAMEWORK = {
         'rest_framework.permissions.IsAuthenticated',
     )
 }
+
+LLM_BASE_URL = os.environ.get('LLM_BASE_URL', default='')
