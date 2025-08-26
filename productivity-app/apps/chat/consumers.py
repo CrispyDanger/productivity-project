@@ -62,6 +62,7 @@ class ConversationConsumer(AsyncWebsocketConsumer):
             user_id=self.user_id
         )
 
+# TODO: CHANGE THIS LOGIC
     @database_sync_to_async
     def create_message(self, conversation_id, message_type, content, user_id):
         if not conversation_id:
