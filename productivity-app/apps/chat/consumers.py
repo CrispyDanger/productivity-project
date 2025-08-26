@@ -1,22 +1,32 @@
 import os
 import json
 from channels.generic.websocket import AsyncWebsocketConsumer
+from channels.db import database_sync_to_async
 
 from langchain_ollama.llms import OllamaLLM
 from langchain_core.prompts import ChatPromptTemplate
+
+from .models import Conversation, Message
 
 
 llm = OllamaLLM(model="mistral",
                 base_url=os.environ.get('LLM_BASE_URL', default=''))
 
 prompt = ChatPromptTemplate([
-    ("system", "You are a helpful django coding assistant."),
+    (
+        "system",
+        """You're a skilled human writer who naturally connects with readers
+        through authentic, conversational content. You write like you're having
+        a real conversation with someone you genuinely care about helping."""
+    ),
     ("user", "{input}"),
 ])
 
 
 class ConversationConsumer(AsyncWebsocketConsumer):
     async def connect(self):
+        self.conv_id = self.scope["url_route"]["kwargs"].get("conversation_id", None)
+        self.user_id = self.scope["url_route"]["kwargs"].get("user_id", None)
         await self.accept()
         await self.send(text_data=json.dumps({
             "role": "system", "content": "Connected to AI"
@@ -26,14 +36,40 @@ class ConversationConsumer(AsyncWebsocketConsumer):
         data = json.loads(text_data)
         user_message = data["content"]
 
-        await self.send(text_data=json.dumps({
-            "role": "user", "content": user_message
-        }))
-
-        # Build prompt for LLM via LangChain
         formatted = prompt.format_messages(input=user_message)
-        response = llm.invoke(formatted)
+
+        await self.create_message(
+            conversation_id=self.conv_id,
+            message_type="user",
+            content=str(formatted),
+            user_id=self.user_id
+        )
+
+        try:
+            response = llm.invoke(formatted)
+        except Exception as e:
+            response = f"Could not connect to LLM-service: {e}"
 
         await self.send(text_data=json.dumps({
-            "role": "assistant", "content": response
+            "role": "assistant",
+            "content": response
         }))
+
+        await self.create_message(
+            conversation_id=self.conv_id,
+            message_type="assistant",
+            content=response,
+            user_id=self.user_id
+        )
+
+    @database_sync_to_async
+    def create_message(self, conversation_id, message_type, content, user_id):
+        if not conversation_id:
+            conversation = Conversation.objects.create(account_id=user_id)
+        else:
+            conversation = Conversation.objects.filter(id=conversation_id).first()
+
+        return Message.objects.create(
+            conversation=conversation,
+            message_type=message_type,
+            content=content)

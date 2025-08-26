@@ -1,0 +1,30 @@
+.git
+.vscode
+.gitignore
+README.md
+temp
+setup.cfg
+
+# Docker
+.docker
+docker-compose.yaml
+Dockerfile
+.dockerignore
+
+# Python
+portfolio/__pycache__/
+apps/__pycache__/
+apps/*/__pycache__/
+apps/*/*/__pycache__/
+apps/*/*/*/__pycache__/
+.venv/
+venv/
+
+# JS
+**/node_modules
+_dev
+
+# Local PostgreSQL data
+data/
+
+**/__pycache__/

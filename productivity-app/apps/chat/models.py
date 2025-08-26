@@ -5,7 +5,8 @@ from uuid import uuid4
 
 class Conversation(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid4, editable=False)
-    account = models.ForeignKey(User, null=False, blank=False, on_delete=models.CASCADE)
+    account = models.ForeignKey(User, null=False, blank=False,
+                                on_delete=models.CASCADE)
     title = models.CharField(max_length=200, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 

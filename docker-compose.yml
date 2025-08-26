@@ -2,7 +2,7 @@
 
 services:
   app:
-    container_name: productivity-project
+    container_name: productivity_project
     build:
       context: .
       args:
