@@ -38,7 +38,7 @@ class ConversationConsumer(AsyncWebsocketConsumer):
 
         formatted = prompt.format_messages(input=user_message)
 
-        await self.create_message(
+        conversation_id = await self.create_message(
             conversation_id=self.conv_id,
             message_type="user",
             content=str(formatted),
@@ -51,6 +51,7 @@ class ConversationConsumer(AsyncWebsocketConsumer):
             response = f"Could not connect to LLM-service: {e}"
 
         await self.send(text_data=json.dumps({
+            "conversation_id": conversation_id,
             "role": "assistant",
             "content": response
         }))
@@ -73,4 +74,4 @@ class ConversationConsumer(AsyncWebsocketConsumer):
         return Message.objects.create(
             conversation=conversation,
             message_type=message_type,
-            content=content)
+            content=content).conversation.id
