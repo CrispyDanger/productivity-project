@@ -13,6 +13,9 @@ class Conversation(models.Model):
     def __str__(self):
         return f'{self.account.username} on {self.created_at.date()}'
 
+    class Meta:
+        ordering = ['-created_at']
+
 
 class Message(models.Model):
     ROLE_CHOICES = (("system", "system"),
@@ -26,4 +29,4 @@ class Message(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        ordering = ["-created_at"]
+        ordering = ['created_at']

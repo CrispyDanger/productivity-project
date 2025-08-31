@@ -25,7 +25,6 @@ prompt = ChatPromptTemplate([
 
 class ConversationConsumer(AsyncWebsocketConsumer):
     async def connect(self):
-        self.conv_id = self.scope["url_route"]["kwargs"].get("conversation_id", None)
         self.user_id = self.scope["url_route"]["kwargs"].get("user_id", None)
         await self.accept()
         await self.send(text_data=json.dumps({
@@ -35,35 +34,38 @@ class ConversationConsumer(AsyncWebsocketConsumer):
     async def receive(self, text_data):
         data = json.loads(text_data)
         user_message = data["content"]
+        conversation_id = data.get('conversation_id', None)
 
         formatted = prompt.format_messages(input=user_message)
 
         conversation_id = await self.create_message(
-            conversation_id=self.conv_id,
+            conversation_id=conversation_id,
             message_type="user",
-            content=str(formatted),
+            content=user_message,
             user_id=self.user_id
         )
 
         try:
             response = llm.invoke(formatted)
+            await self.send(text_data=json.dumps({
+                "conversation_id": str(conversation_id),
+                "role": "assistant",
+                "content": response
+            }))
+            await self.create_message(
+                conversation_id=conversation_id,
+                message_type="assistant",
+                content=response,
+                user_id=self.user_id
+            )
         except Exception as e:
             response = f"Could not connect to LLM-service: {e}"
+            await self.send(text_data=json.dumps({
+                "role": "system",
+                "content": response
+            }))
 
-        await self.send(text_data=json.dumps({
-            "conversation_id": conversation_id,
-            "role": "assistant",
-            "content": response
-        }))
 
-        await self.create_message(
-            conversation_id=self.conv_id,
-            message_type="assistant",
-            content=response,
-            user_id=self.user_id
-        )
-
-# TODO: CHANGE THIS LOGIC
     @database_sync_to_async
     def create_message(self, conversation_id, message_type, content, user_id):
         if not conversation_id:
