@@ -185,9 +185,6 @@ REST_FRAMEWORK = {
     )
 }
 
-LLM_BASE_URL = os.environ.get('LLM_BASE_URL', default='')
-
-
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME":
     timedelta(minutes=5),
@@ -250,3 +247,6 @@ SIMPLE_JWT = {
     "SLIDING_TOKEN_REFRESH_SERIALIZER":
     "rest_framework_simplejwt.serializers.TokenRefreshSlidingSerializer",
 }
+
+LLM_BASE_URL = os.environ.get('LLM_BASE_URL', default='')
+LLM_MODEL = os.environ.get('LLM_MODEL', default='llama3.1')

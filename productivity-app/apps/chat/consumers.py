@@ -1,7 +1,7 @@
-import os
 import json
 from channels.generic.websocket import AsyncWebsocketConsumer
 from channels.db import database_sync_to_async
+from django.conf import settings
 
 from langchain_ollama.llms import OllamaLLM
 from langchain_core.prompts import ChatPromptTemplate
@@ -9,8 +9,8 @@ from langchain_core.prompts import ChatPromptTemplate
 from .models import Conversation, Message
 
 
-llm = OllamaLLM(model="mistral",
-                base_url=os.environ.get('LLM_BASE_URL', default=''))
+llm = OllamaLLM(model=settings.LLM_MODEL,
+                base_url=settings.LLM_BASE_URL)
 
 prompt = ChatPromptTemplate([
     (
@@ -38,14 +38,14 @@ class ConversationConsumer(AsyncWebsocketConsumer):
 
         formatted = prompt.format_messages(input=user_message)
 
-        conversation_id = await self.create_message(
-            conversation_id=conversation_id,
-            message_type="user",
-            content=user_message,
-            user_id=self.user_id
-        )
-
         try:
+            conversation_id = await self.create_message(
+                conversation_id=conversation_id,
+                message_type="user",
+                content=user_message,
+                user_id=self.user_id
+            )
+
             response = llm.invoke(formatted)
             await self.send(text_data=json.dumps({
                 "conversation_id": str(conversation_id),
@@ -64,7 +64,6 @@ class ConversationConsumer(AsyncWebsocketConsumer):
                 "role": "system",
                 "content": response
             }))
-
 
     @database_sync_to_async
     def create_message(self, conversation_id, message_type, content, user_id):
