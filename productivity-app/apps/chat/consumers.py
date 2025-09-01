@@ -1,26 +1,8 @@
 import json
 from channels.generic.websocket import AsyncWebsocketConsumer
 from channels.db import database_sync_to_async
-from django.conf import settings
-
-from langchain_ollama.llms import OllamaLLM
-from langchain_core.prompts import ChatPromptTemplate
-
 from .models import Conversation, Message
-
-
-llm = OllamaLLM(model=settings.LLM_MODEL,
-                base_url=settings.LLM_BASE_URL)
-
-prompt = ChatPromptTemplate([
-    (
-        "system",
-        """You're a skilled human writer who naturally connects with readers
-        through authentic, conversational content. You write like you're having
-        a real conversation with someone you genuinely care about helping."""
-    ),
-    ("user", "{input}"),
-])
+from core.services import LLMService
 
 
 class ConversationConsumer(AsyncWebsocketConsumer):
@@ -36,8 +18,6 @@ class ConversationConsumer(AsyncWebsocketConsumer):
         user_message = data["content"]
         conversation_id = data.get('conversation_id', None)
 
-        formatted = prompt.format_messages(input=user_message)
-
         try:
             conversation_id = await self.create_message(
                 conversation_id=conversation_id,
@@ -46,7 +26,7 @@ class ConversationConsumer(AsyncWebsocketConsumer):
                 user_id=self.user_id
             )
 
-            response = llm.invoke(formatted)
+            response = await LLMService().async_generate(user_message)
             await self.send(text_data=json.dumps({
                 "conversation_id": str(conversation_id),
                 "role": "assistant",

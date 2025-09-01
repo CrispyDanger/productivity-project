@@ -61,6 +61,7 @@ INSTALLED_APPS = [
     'core',
     'event',
     'chat',
+    'social',
 ]
 
 MIDDLEWARE = [
@@ -250,3 +251,8 @@ SIMPLE_JWT = {
 
 LLM_BASE_URL = os.environ.get('LLM_BASE_URL', default='')
 LLM_MODEL = os.environ.get('LLM_MODEL', default='llama3.1')
+
+CELERY_BROKER_URL = os.environ.get("CELERY_BROKER",
+                                   "redis://redis:6379/0")
+CELERY_RESULT_BACKEND = os.environ.get("CELERY_BACKEND",
+                                       "redis://redis:6379/0")
