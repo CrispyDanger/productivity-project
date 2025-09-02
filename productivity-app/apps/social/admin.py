@@ -1,3 +1,6 @@
 from django.contrib import admin
+from .models import SocialProfile, Post, Comment
 
-# Register your models here.
+admin.site.register(SocialProfile)
+admin.site.register(Post)
+admin.site.register(Comment)
