@@ -24,7 +24,7 @@ class SocialProfile(models.Model):
 
 class Post(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid4)
-    creator = models.ForeignKey(User, on_delete=models.CASCADE)
+    author = models.ForeignKey(SocialProfile, on_delete=models.CASCADE)
     text = models.CharField(max_length=120)
     is_ai = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)

@@ -26,7 +26,7 @@ class ConversationConsumer(AsyncWebsocketConsumer):
                 user_id=self.user_id
             )
 
-            response = await LLMService().async_generate(user_message)
+            response = await LLMService().async_generate(input=user_message)
             await self.send(text_data=json.dumps({
                 "conversation_id": str(conversation_id),
                 "role": "assistant",

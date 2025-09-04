@@ -3,9 +3,9 @@ from asgiref.sync import sync_to_async
 
 
 class LLMService:
-    def generate(self, user_message):
-        formatted = prompt.format_messages(input=user_message)
+    def generate(self, prompt_template=prompt, **kwargs):
+        formatted = prompt_template.format_messages(**kwargs)
         return llm.invoke(formatted)
 
-    async def async_generate(self, user_message):
-        return await sync_to_async(self.generate)(user_message)
+    async def async_generate(self, **kwargs):
+        return await sync_to_async(self.generate)(**kwargs)
