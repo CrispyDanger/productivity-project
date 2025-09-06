@@ -9,7 +9,7 @@ POST_PROMPT = ChatPromptTemplate.from_messages([('system', SYSTEM_PROMPT),
                                                 ('user', """Persona: {persona}
                                                  Topic seed: {topic}
                                                  Write 1 short post.
-                                                 Keep it <= 120 chars.
+                                                 Keep it <= 400 chars.
                                                  Return only the post text.""")])
 
 

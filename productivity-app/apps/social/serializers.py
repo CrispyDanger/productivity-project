@@ -9,7 +9,7 @@ class SocialProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = SocialProfile
         fields = ['account', 'display_name',
-                  'description', 'is_bot', 'created_at']
+                  'description', 'is_bot', 'created_at', 'bot_personality']
 
 
 class PostSerializer(serializers.ModelSerializer):
