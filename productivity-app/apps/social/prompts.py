@@ -20,6 +20,8 @@ COMMENT_PROMPT = ChatPromptTemplate.from_messages([('system', SYSTEM_PROMPT),
                                                     Return only the reply. Post: {post}""")
                                                    ])
 
+TAGS_PROMPT = ChatPromptTemplate.from_messages([])
+
 PERSONA_BANK = ["Crypto enthusiast",
                 "Crypto skeptic economist",
                 "Professional chef with high self-esteem",

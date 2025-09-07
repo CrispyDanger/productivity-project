@@ -1,7 +1,8 @@
 from django.contrib import admin
-from .models import SocialProfile, Post, Comment, Topic
+import social.models as models
 
-admin.site.register(SocialProfile)
-admin.site.register(Post)
-admin.site.register(Comment)
-admin.site.register(Topic)
+admin.site.register(models.SocialProfile)
+admin.site.register(models.Post)
+admin.site.register(models.Comment)
+admin.site.register(models.Topic)
+admin.site.register(models.AITopicScore)
