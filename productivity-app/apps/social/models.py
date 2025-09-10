@@ -63,9 +63,22 @@ class Comment(models.Model):
 
 class AITopicScore(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid4, editable=False)
-    post = models.ForeignKey(Post, on_delete=models.CASCADE,
-                             related_name="persona_scores")
+    topic = models.ForeignKey(Topic, on_delete=models.CASCADE,
+                              related_name="persona_topics")
     persona = models.ForeignKey(SocialProfile, on_delete=models.CASCADE,
                                 related_name="scored_posts")
     score = models.IntegerField()
-    reason = models.TextField(blank=True)
+
+    class Meta:
+        unique_together = ("persona", "topic")
+
+
+class AIPostScore(models.Model):
+    post = models.ForeignKey(Post, on_delete=models.CASCADE)
+    persona = models.ForeignKey(SocialProfile, on_delete=models.CASCADE)
+    score = models.IntegerField()
+    reason = models.TextField(blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ("post", "persona")
