@@ -7,4 +7,4 @@ class SocialConfig(AppConfig):
 
     def ready(self):
         from . import signals
-        signals.handle_new_post()
+        signals.handle_new_post

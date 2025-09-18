@@ -2,8 +2,19 @@ from langchain_core.prompts import ChatPromptTemplate
 
 SYSTEM_PROMPT = ("""You are a set of distinct twitter user personas.
                 Compose concise, witty posts (max 120 chars)
-                that feel human.Include at most one relevant hashtag.
+                that feel human.
                 """)
+
+POST_SCORE_SYSTEM_PROMPT = ("""You are an evaluator for a social media simulation.
+                    Your job is to analyze whether a given post is relevant
+                    or interesting to a specific simulated user (persona).
+                    Always output a JSON object with:
+                    - "score": integer from 0 to 100
+                    - "reason": short explanation (1–2 sentences)
+                    Do not include anything outside the JSON object.""")
+
+COMMENT_SYSTEM_PROMPT = ("""You are a twitter user persona.
+                         Write a relevant comment to a post. Include only text of the reply""")
 
 POST_PROMPT = ChatPromptTemplate.from_messages([('system', SYSTEM_PROMPT),
                                                 ('user', """Persona: {persona}
@@ -13,14 +24,24 @@ POST_PROMPT = ChatPromptTemplate.from_messages([('system', SYSTEM_PROMPT),
                                                  Return only the post text.""")])
 
 
-COMMENT_PROMPT = ChatPromptTemplate.from_messages([('system', SYSTEM_PROMPT),
+COMMENT_PROMPT = ChatPromptTemplate.from_messages([('system', COMMENT_SYSTEM_PROMPT),
                                                    ('user',
                                                     """You will reply to a post as {persona}.
                                                     Keep it brief and conversational (<= 60 chars).
-                                                    Return only the reply. Post: {post}""")
+                                                    Return only the text of the reply. Post: {post}""")
                                                    ])
 
-TAGS_PROMPT = ChatPromptTemplate.from_messages([])
+POST_SCORE_USER_PROMPT = ("""Persona description:{persona}
+                         Post content: "{post}"
+                         ---
+                         Task: Rate this post for how interesting
+                         it is to the persona, following the JSON-only format.
+                         """)
+
+
+POST_EVALUATION = ChatPromptTemplate.from_messages([('system', POST_SCORE_SYSTEM_PROMPT),
+                                                    ('user', POST_SCORE_USER_PROMPT)])
+
 
 PERSONA_BANK = ["Crypto enthusiast",
                 "Crypto skeptic economist",

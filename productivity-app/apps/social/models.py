@@ -55,10 +55,13 @@ class Comment(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid4)
     post = models.ForeignKey(Post, on_delete=models.CASCADE)
     created_by = models.ForeignKey(SocialProfile, on_delete=models.CASCADE)
-    text = models.CharField(max_length=60, blank=False)
+    text = models.CharField(max_length=500, blank=False)
     is_ai = models.BooleanField(default=True)
     # TODO: Add media image support
     created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f'{self.created_by.display_name} commented on {self.post.text[0:10]} at {self.created_at}'
 
 
 class AITopicScore(models.Model):
