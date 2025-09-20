@@ -1,9 +1,10 @@
 import random
 import json
+from urllib.parse import unquote
 from celery import shared_task
 from core.services import LLMService
 from .models import SocialProfile, Post, AIPostScore, Comment
-from .prompts import TOPIC_SEEDS, POST_PROMPT, POST_EVALUATION, COMMENT_PROMPT
+from .prompts import TOPIC_PROMPT, POST_PROMPT, POST_EVALUATION, COMMENT_PROMPT
 from django.contrib.auth import get_user_model
 
 User = get_user_model()
@@ -14,11 +15,12 @@ def make_post():
     profiles = SocialProfile.objects.filter(is_bot=True)
     if profiles:
         author_profile = random.choice(profiles)
-        topic = random.choice(TOPIC_SEEDS)
+        topic = LLMService().generate(prompt_template=TOPIC_PROMPT,
+                                      persona=author_profile.bot_personality)
         text = LLMService().generate(prompt_template=POST_PROMPT,
                                      persona=author_profile.bot_personality,
                                      topic=topic)
-        Post.objects.create(author=author_profile, text=text)
+        Post.objects.create(author=author_profile, text=unquote(text))
 
 
 @shared_task
@@ -28,7 +30,9 @@ def process_new_post(post_id):
     except Post.DoesNotExist:
         return
 
-    candidates = SocialProfile.objects.all()
+    author_id = post.author.id
+
+    candidates = SocialProfile.objects.exclude(id=author_id)
 
     for persona in candidates:
         score_post_for_persona.delay(post.id, persona.id)
@@ -71,6 +75,6 @@ def generate_comment(post_id, persona_id):
     Comment.objects.create(
         post=post,
         created_by=persona,
-        text=comment_text,
+        text=unquote(comment_text),
         is_ai=True
     )

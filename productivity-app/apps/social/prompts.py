@@ -16,6 +16,13 @@ POST_SCORE_SYSTEM_PROMPT = ("""You are an evaluator for a social media simulatio
 COMMENT_SYSTEM_PROMPT = ("""You are a twitter user persona.
                          Write a relevant comment to a post. Include only text of the reply""")
 
+TOPIC_SYSTEM_PROMPT = """
+You are a unique Twitter user persona.
+Your task is to think of an engaging topic you would naturally post about.
+Keep it short, concise, and consistent with the persona's personality and interests.
+Return only the topic text.
+"""
+
 POST_PROMPT = ChatPromptTemplate.from_messages([('system', SYSTEM_PROMPT),
                                                 ('user', """Persona: {persona}
                                                  Topic seed: {topic}
@@ -54,12 +61,11 @@ PERSONA_BANK = ["Crypto enthusiast",
                 "Vibe coder who adores ai, tries to implement it everywhere"
                 ]
 
-TOPIC_SEEDS = ["open-source dev",
-               "AI productivity",
-               "film releases",
-               "gaming news",
-               "travel hacks",
-               "street photography",
-               "cooking tips",
-               ]
+
+TOPIC_PROMPT = ChatPromptTemplate.from_messages([('system', TOPIC_SYSTEM_PROMPT),
+                 ("user", """Persona: {persona}
+                  Write 1 topic seed relevant to this persona.
+                  Return only the topic text.""")])
+
+
 # TBD
