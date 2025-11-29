@@ -15,6 +15,7 @@ services:
       - 8000:8000
     volumes:
       - .:/app
+      - /app/.venv
       - ./data/web:/vol/web
     environment:
       - SECRET_KEY=${SECRET_KEY}
@@ -66,6 +67,7 @@ services:
     command: celery -A productivity-app worker -l info
     volumes:
       - .:/app
+      - /app/.venv
       - ./data/web:/vol/web
     environment:
       - SECRET_KEY=${SECRET_KEY}
@@ -89,6 +91,7 @@ services:
     command: celery -A productivity-app beat -l info
     volumes:
       - .:/app
+      - /app/.venv
     environment:
       - SECRET_KEY=${SECRET_KEY}
       - DEBUG=True
