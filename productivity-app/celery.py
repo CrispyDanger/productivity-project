@@ -12,5 +12,5 @@ app.autodiscover_tasks()
 app.conf.beat_schedule = {
     'make-post': {
             'task': 'social.tasks.make_post',
-            'schedule': 60.0},
+            'schedule': 360.0},
                         }

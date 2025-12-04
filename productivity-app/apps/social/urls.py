@@ -3,5 +3,7 @@ from . import api
 
 urlpatterns = [
     path('', api.PostListView.as_view(),
-         name='feed')
+         name='feed'),
+    path('create', api.CreatePostView.as_view(),
+         name="create-post")
 ]

@@ -6,14 +6,6 @@ from django.contrib.auth import get_user_model
 User = get_user_model()
 
 
-class Topic(models.Model):
-    name = models.CharField(max_length=120,
-                            blank=False, null=False, unique=True)
-
-    def __str__(self):
-        return self.name
-
-
 class SocialProfile(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid4)
     account = models.OneToOneField(User, on_delete=models.CASCADE)
@@ -23,12 +15,6 @@ class SocialProfile(models.Model):
     description = models.CharField(max_length=120, blank=True)
     is_bot = models.BooleanField(default=True)
     bot_personality = models.CharField(max_length=150, blank=True)
-    interests = models.ManyToManyField(Topic,
-                                       related_name='interest_topics',
-                                       blank=True)
-    dislikes = models.ManyToManyField(Topic,
-                                      related_name='dislikes_topics',
-                                      blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
@@ -38,50 +24,42 @@ class SocialProfile(models.Model):
         return f'@{self.account.username}'
 
 
-class Post(models.Model):
-    id = models.UUIDField(primary_key=True, default=uuid4)
-    author = models.ForeignKey(SocialProfile, on_delete=models.CASCADE)
-    text = models.CharField(max_length=500)
-    is_ai = models.BooleanField(default=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    meta_tags = models.ManyToManyField(Topic, related_name="posts", blank=True)
-    # TODO: Add media support
-
-    class Meta:
-        ordering = ['-created_at']
-
-
 class Comment(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid4)
-    post = models.ForeignKey(Post, on_delete=models.CASCADE)
     created_by = models.ForeignKey(SocialProfile, on_delete=models.CASCADE)
     text = models.CharField(max_length=500, blank=False)
     is_ai = models.BooleanField(default=True)
     # TODO: Add media image support
     created_at = models.DateTimeField(auto_now_add=True)
 
+    parent = models.ForeignKey(
+        "self",
+        null=True,
+        blank=True,
+        on_delete=models.CASCADE,
+        related_name="replies"
+    )
+
+    class Meta:
+        ordering = ["created_at"]
+
     def __str__(self):
-        return f'{self.created_by.display_name} commented on {self.post.text[0:10]} at {self.created_at}'
+        if self.parent:
+            return f"{self.created_by.display_name} replied to a comment"
+        return f"{self.created_by.display_name} commented on {self.post.text[:10]}"
 
 
-class AITopicScore(models.Model):
-    id = models.UUIDField(primary_key=True, default=uuid4, editable=False)
-    topic = models.ForeignKey(Topic, on_delete=models.CASCADE,
-                              related_name="persona_topics")
-    persona = models.ForeignKey(SocialProfile, on_delete=models.CASCADE,
-                                related_name="scored_posts")
-    score = models.IntegerField()
-
-    class Meta:
-        unique_together = ("persona", "topic")
-
-
-class AIPostScore(models.Model):
-    post = models.ForeignKey(Post, on_delete=models.CASCADE)
-    persona = models.ForeignKey(SocialProfile, on_delete=models.CASCADE)
-    score = models.IntegerField()
-    reason = models.TextField(blank=True, null=True)
+class Post(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid4)
+    author = models.ForeignKey(SocialProfile, on_delete=models.CASCADE)
+    text = models.CharField(max_length=500)
+    is_ai = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
+    comments = models.ManyToManyField(Comment, blank=True)
+    # TODO: Add media support
 
     class Meta:
-        unique_together = ("post", "persona")
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"Post at {self.created_at} by {self.author.display_name}"

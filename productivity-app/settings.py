@@ -60,7 +60,6 @@ INSTALLED_APPS = [
     "channels",
     'core',
     'event',
-    'chat',
     'social',
 ]
 
@@ -250,7 +249,9 @@ SIMPLE_JWT = {
 }
 
 LLM_BASE_URL = os.environ.get('LLM_BASE_URL', default='')
-LLM_MODEL = os.environ.get('LLM_MODEL', default='llama3.1')
+LLM_MODEL = os.environ.get('LLM_MODEL', default='llama3.1:8b')
+EMBEDDINGS_MODEL = os.environ.get('EMBEDDINGS_MODEL', default='ollama:nomic-embed-text')
+
 
 CELERY_BROKER_URL = os.environ.get("CELERY_BROKER",
                                    "redis://redis:6379/0")
