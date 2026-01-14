@@ -6,9 +6,11 @@ from core.llm import agent, BotContext, store
 from .models import SocialProfile, Post
 from langchain.messages import AIMessage, ToolMessage
 # from .prompts import TOPIC_PROMPT, POST_PROMPT, POST_EVALUATION, COMMENT_PROMPT
+from core.langchain.llm import LLMService
 from django.contrib.auth import get_user_model
 
 User = get_user_model()
+llm = LLMService()
 
 
 @shared_task
@@ -16,34 +18,27 @@ def make_post():
     profiles = SocialProfile.objects.filter(is_bot=True)
     if profiles:
         author = random.choice(profiles)
-        text = agent.invoke({
-            "messages": [{
-                "role": "user",
-                "content": """Write a text for a post.
-                            1. Retrieve my personality and recent posts using the context tool.
-                            2. Based on the retrieved themes and style, write a NEW post (under 500 chars).
-                            3. The final output must be the raw post text only, with no introduction."""
-            }]
-        }, store=store,
-            context=BotContext(username=author.display_name,
-                               personality_id=author.bot_personality))
+        previous_posts = Post.objects.filter(author=author).order_by('-created_at')[:5]
 
-        print(text)
+        previous_posts_text = [post.text for post in previous_posts]
 
-        response_text = text['messages'][-1]
+        text = llm.invoke(personality=author.bot_personality,
+                          action='write_post', previous_messages=previous_posts_text)
 
-        # TODO: Fix this nonsense
-        if isinstance(response_text, AIMessage):
-            response_text = response_text.content
-        elif isinstance(response_text, ToolMessage):
-            response_text = text['structured_response'].post_content
-        else:
-            raise Exception
+        print(text['answer'])
 
-        print(response_text)
+        response_text = text['answer']
 
-        post = Post.objects.create(author=author, text=unquote(response_text))
-        store.put(("posts", author.display_name), f"post_{post.id}", post.text)
+        Post.objects.create(author=author, text=unquote(response_text))
+
+
+@shared_task
+def make_comment():
+    profiles = SocialProfile.objects.filter(is_bot=True)
+    if profiles:
+        author = random.choice(profiles)
+    pass
+    # TODO: Add make_comment logic for posts, add make_reply logic for replies
 
 # @shared_task
 # def process_new_post(post_id):

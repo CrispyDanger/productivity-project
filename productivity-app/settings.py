@@ -19,14 +19,14 @@ from pathlib import Path
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 PROJECT_ROOT = os.path.dirname(__file__)
-sys.path.insert(0, os.path.join(PROJECT_ROOT, 'apps'))
+sys.path.insert(0, os.path.join(PROJECT_ROOT, "apps"))
 
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.environ.get("SECRET_KEY", 'secret')
+SECRET_KEY = os.environ.get("SECRET_KEY", "secret")
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -36,31 +36,40 @@ ALLOWED_HOSTS = []
 ASGI_APPLICATION = "productivity-app.asgi.application"
 
 
-CHANNEL_LAYERS = {"default": {
-    "BACKEND": "channels_redis.core.RedisChannelLayer",
-    "CONFIG": {
-        "hosts": [("redis", 6379)],
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {
+            "hosts": [("redis", 6379)],
         },
-},
+    },
 }
 
 
 # Application definition
 
 INSTALLED_APPS = [
-    "daphne",
+    "django.contrib.sites",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "allauth",
+    "allauth.account",
+    "allauth.socialaccount",
+    "allauth.socialaccount.providers.google",
+    "dj_rest_auth",
+    "dj_rest_auth.registration",
     "corsheaders",
     "rest_framework",
+    "rest_framework.authtoken",
+    "rest_framework_simplejwt",
     "channels",
-    'core',
-    'event',
-    'social',
+    "core",
+    "event",
+    "social",
 ]
 
 MIDDLEWARE = [
@@ -72,6 +81,7 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "allauth.account.middleware.AccountMiddleware",
 ]
 
 ROOT_URLCONF = "productivity-app.urls"
@@ -100,24 +110,20 @@ CORS_ALLOWED_ORIGINS = []
 CORS_ALLOWED_ORIGINS.extend(
     filter(
         None,
-        os.environ.get('CORS_ALLOWED_ORIGINS', '').split(" "),
-    ))
+        os.environ.get("CORS_ALLOWED_ORIGINS", "").split(" "),
+    )
+)
 
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
 DATABASES = {
     "default": {
-        "ENGINE":
-        os.environ.get("SQL_ENGINE", "django.db.backends.sqlite3"),
-        "NAME":
-        os.environ.get("SQL_DATABASE", os.path.join(BASE_DIR, "db.sqlite3")),
-        "USER":
-        os.environ.get("SQL_USER", "user"),
-        "PASSWORD":
-        os.environ.get("SQL_PASSWORD", "password"),
-        "HOST":
-        os.environ.get("SQL_HOST", "localhost"),
+        "ENGINE": os.environ.get("SQL_ENGINE", "django.db.backends.sqlite3"),
+        "NAME": os.environ.get("SQL_DATABASE", os.path.join(BASE_DIR, "db.sqlite3")),
+        "USER": os.environ.get("SQL_USER", "user"),
+        "PASSWORD": os.environ.get("SQL_PASSWORD", "password"),
+        "HOST": os.environ.get("SQL_HOST", "localhost"),
     }
 }
 
@@ -156,10 +162,10 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 
-STATIC_URL = '/static/static/'
-MEDIA_URL = os.environ.get("MEDIA_URL_PREFIX", default='') + '/static/media/'
-MEDIA_ROOT = '/vol/web/media'
-STATIC_ROOT = '/vol/web/static'
+STATIC_URL = "/static/static/"
+MEDIA_URL = os.environ.get("MEDIA_URL_PREFIX", default="") + "/static/media/"
+MEDIA_ROOT = "/vol/web/media"
+STATIC_ROOT = "/vol/web/static"
 STATICFILES_DIRS = []
 
 # Default primary key field type
@@ -177,83 +183,63 @@ CHANNEL_LAYERS = {
 }
 
 REST_FRAMEWORK = {
-    'DEFAULT_AUTHENTICATION_CLASSES': (
-        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    "DEFAULT_AUTHENTICATION_CLASSES": (
+        "rest_framework_simplejwt.authentication.JWTAuthentication",
     ),
-    'DEFAULT_PERMISSION_CLASSES': (
-        'rest_framework.permissions.IsAuthenticated',
-    )
+    "DEFAULT_PERMISSION_CLASSES": ("rest_framework.permissions.IsAuthenticated",),
 }
 
 SIMPLE_JWT = {
-    "ACCESS_TOKEN_LIFETIME":
-    timedelta(minutes=5),
-    "REFRESH_TOKEN_LIFETIME":
-    timedelta(days=7),
-    "ROTATE_REFRESH_TOKENS":
-    False,
-    "BLACKLIST_AFTER_ROTATION":
-    False,
-    "UPDATE_LAST_LOGIN":
-    False,
-    "ALGORITHM":
-    "HS256",
-    "SIGNING_KEY":
-    SECRET_KEY,
-    "VERIFYING_KEY":
-    "",
-    "AUDIENCE":
-    None,
-    "ISSUER":
-    None,
-    "JSON_ENCODER":
-    None,
-    "JWK_URL":
-    None,
-    "LEEWAY":
-    0,
-    "AUTH_HEADER_TYPES": ("Bearer", ),
-    "AUTH_HEADER_NAME":
-    "HTTP_AUTHORIZATION",
-    "USER_ID_FIELD":
-    "id",
-    "USER_ID_CLAIM":
-    "user_id",
-    "USER_AUTHENTICATION_RULE":
-    "rest_framework_simplejwt.authentication.default_user_authentication_rule",
-    "AUTH_TOKEN_CLASSES": ("rest_framework_simplejwt.tokens.AccessToken", ),
-    "TOKEN_TYPE_CLAIM":
-    "token_type",
-    "TOKEN_USER_CLASS":
-    "rest_framework_simplejwt.models.TokenUser",
-    "JTI_CLAIM":
-    "jti",
-    "SLIDING_TOKEN_REFRESH_EXP_CLAIM":
-    "refresh_exp",
-    "SLIDING_TOKEN_LIFETIME":
-    timedelta(minutes=5),
-    "SLIDING_TOKEN_REFRESH_LIFETIME":
-    timedelta(days=1),
-    "TOKEN_OBTAIN_SERIALIZER":
-    "rest_framework_simplejwt.serializers.TokenObtainPairSerializer",
-    "TOKEN_REFRESH_SERIALIZER":
-    "rest_framework_simplejwt.serializers.TokenRefreshSerializer",
-    "TOKEN_VERIFY_SERIALIZER":
-    "rest_framework_simplejwt.serializers.TokenVerifySerializer",
-    "TOKEN_BLACKLIST_SERIALIZER":
-    "rest_framework_simplejwt.serializers.TokenBlacklistSerializer",
-    "SLIDING_TOKEN_OBTAIN_SERIALIZER":
-    "rest_framework_simplejwt.serializers.TokenObtainSlidingSerializer",
-    "SLIDING_TOKEN_REFRESH_SERIALIZER":
-    "rest_framework_simplejwt.serializers.TokenRefreshSlidingSerializer",
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=60),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=7),
+    "ROTATE_REFRESH_TOKENS": False,
+    "BLACKLIST_AFTER_ROTATION": False,
+    "UPDATE_LAST_LOGIN": True,
+    "SIGNING_KEY": "complexsigningkey",
+    "ALGORITHM": "HS512",
 }
 
-LLM_BASE_URL = os.environ.get('LLM_BASE_URL', default='')
-LLM_MODEL = os.environ.get('LLM_MODEL', default='llama3.1:8b')
-EMBEDDINGS_MODEL = os.environ.get('EMBEDDINGS_MODEL', default='ollama:nomic-embed-text')
+SITE_ID = 1
+
+ACCOUNT_SIGNUP_FIELDS = ["username*", "password1*", "password2*"]
+
+ACCOUNT_EMAIL_VERIFICATION = "none"
+
+SOCIALACCOUNT_PROVIDERS = {
+    "google": {
+        "APP": {
+            "client_id": os.environ.get("GOOGLE_CLIENT_ID"),
+            "secret": os.environ.get("GOOGLE_SECRET"),
+            "key": "",
+        },
+        "SCOPE": [
+            "profile",
+            "email",
+        ],
+        "AUTH_PARAMS": {
+            "access_type": "online",
+        },
+        "VERIFIED_EMAIL": True,
+    },
+}
+
+REST_AUTH = {
+    "USE_JWT": True,
+    "JWT_AUTH_HTTPONLY": False,
+}
+
+if DEBUG:
+    CORS_ALLOW_ALL_ORIGINS = True
+else:
+    CORS_ALLOWED_ORIGINS = [
+        "http://localhost:3000/",
+        "http://127.0.0.1:3000/",
+    ]
+
+LLM_BASE_URL = os.environ.get("LLM_BASE_URL", default="")
+LLM_MODEL = os.environ.get("LLM_MODEL", default="ollama:gpt-oss")
+EMBEDDINGS_MODEL = os.environ.get("EMBEDDINGS_MODEL", default="nomic-embed-text")
 
 
-CELERY_BROKER_URL = os.environ.get("CELERY_BROKER",
-                                   "redis://redis:6379/0")
-CELERY_RESULT_BACKEND = os.environ.get("CELERY_BACKEND",
-                                       "redis://redis:6379/0")
+CELERY_BROKER_URL = os.environ.get("CELERY_BROKER", "redis://redis:6379/0")
+CELERY_RESULT_BACKEND = os.environ.get("CELERY_BACKEND", "redis://redis:6379/0")

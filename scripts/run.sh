@@ -6,4 +6,4 @@ python manage.py migrate --noinput
 
 python manage.py collectstatic --noinput
 
-daphne -b 0.0.0.0 -p 8000 productivity-app.asgi:application
+hypercorn -b 0.0.0.0:8000 -w 2 productivity-app.asgi:application
